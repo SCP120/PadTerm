@@ -187,7 +187,7 @@ The list follows `ls -t ~/.padterm/seen` and shows at most 50 rows. A record is 
 | Host tests | `scripts/run_tests.sh` | `build/host/*`, `tests/artifacts/test_results.json` |
 | iOS app | theos, `ios/Makefile`, SDK `iPhoneOS9.3-armv7.sdk`, target 6.0, **ARM only** (`-mno-thumb`, also for libvterm, OpenSSL, libssh2) | `ios/packages/*.deb` |
 | Device test | `SELFTEST=1` build + `tests/device/` over USB | `tests/artifacts/device_results.json`, screenshots |
-| All packages | `scripts/package_all.sh`, arm64 pass with `iPhoneOS16.5.sdk`, target 7.0 | `dist/`: fat `.ipa`, rootful and rootless `.deb` |
+| All packages | `scripts/package_all.sh`, arm64 pass with `iPhoneOS16.5.sdk`, target 10.0 | `dist/`: fat `.ipa` and rootful `.deb`, iOS 6 to 12 |
 | Modern UIKit bench | `scripts/build_catalyst.sh`, `tests/modern/run_bench.sh` | `build/catalyst/PadTerm.app`, `tests/artifacts/modern/` |
 | Release check | `scripts/check_release.py` | Fails on keys, session records, captures, local paths, mascots in packages |
 | Binary check | `scripts/check_ios_binary.py` | Fails on Thumb functions, `LC_BUILD_VERSION`, chained fixups, TLV, min OS ≠ 6.0, test code in a release |

@@ -1,8 +1,7 @@
 #!/bin/bash
-# Build every package in dist/.
-#   PadTerm_<v>.ipa                              fat armv7+arm64: sideload it (a tool signs it with your Apple ID)
-#   dev.padterm.app_<v>_iphoneos-arm.deb         fat, jailbroken iOS 6 to about 14 (rootful)
-#   dev.padterm.app_<v>_iphoneos-arm64.deb       arm64, rootless jailbreaks (/var/jb, iOS 15+)
+# Build the release files in dist/. PadTerm supports iOS 6 to 12; both files are fat, armv7 + arm64.
+#   PadTerm-<v>-iOS7-12-sideload.ipa     not jailbroken: a tool signs it with your Apple Account (iOS 6 has no such tool)
+#   PadTerm-<v>-iOS6-12-jailbreak.deb    rootful jailbreak; its control file refuses iOS 13 and later
 # Only the armv7 slice has run on a device (iPad mini 1, iOS 6.1.3). See docs/design/ios-version-support.md.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -38,14 +37,8 @@ ldid -S "$APP/PadTerm"
 lipo -info "$APP/PadTerm"
 mkdir -p "$W/app/DEBIAN"
 sed -e "/^Architecture:/s/.*/Architecture: iphoneos-arm/" ios/control > "$W/app/DEBIAN/control"
-dpkg-deb --root-owner-group -Zgzip -b "$W/app" "$D/dev.padterm.app_${V}_iphoneos-arm.deb" >/dev/null
+dpkg-deb --root-owner-group -Zgzip -b "$W/app" "$D/PadTerm-${V}-iOS6-12-jailbreak.deb" >/dev/null
 mkdir -p "$W/ipa/Payload"
 ditto "$APP" "$W/ipa/Payload/PadTerm.app"
-(cd "$W/ipa" && zip -qryX "$D/PadTerm_$V.ipa" Payload)
-mkdir -p "$W/rootless/var/jb/Applications" "$W/rootless/DEBIAN"
-ditto "$APP" "$W/rootless/var/jb/Applications/PadTerm.app"
-cp "$O/PadTerm.arm64" "$W/rootless/var/jb/Applications/PadTerm.app/PadTerm"
-ldid -S "$W/rootless/var/jb/Applications/PadTerm.app/PadTerm"
-sed -e "/^Architecture:/s/.*/Architecture: iphoneos-arm64/" -e "/^Depends:/s/.*/Depends: firmware (>= 15.0)/" ios/control > "$W/rootless/DEBIAN/control"
-dpkg-deb --root-owner-group -Zgzip -b "$W/rootless" "$D/dev.padterm.app_${V}_iphoneos-arm64.deb" >/dev/null
+(cd "$W/ipa" && zip -qryX "$D/PadTerm-${V}-iOS7-12-sideload.ipa" Payload)
 ls -l "$D" | awk 'NR>1{print $5, $9}'

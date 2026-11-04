@@ -1,9 +1,9 @@
 Package: dev.padterm.app
 Name: PadTerm
-Version: 0.1.0
+Version: 0.1.1
 Architecture: iphoneos-arm
-Description: SSH + tmux terminal for Claude Code and Codex CLI on your own server. iPad, iOS 6.
+Description: SSH + tmux terminal for Claude Code and Codex CLI on your own server. iPad, iOS 6 to 12.
 Maintainer: PadTerm contributors
 Author: PadTerm contributors
 Section: Terminal_Support
-Depends: firmware (>= 6.0)
+Depends: firmware (>= 6.0), firmware (<< 13.0)

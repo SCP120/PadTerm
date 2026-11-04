@@ -6,9 +6,10 @@
 
 | | |
 |---|---|
-| **Install** | [Install guide](docs/install/README.md) for every iPad, with or without a jailbreak |
-| **Tested** | ✅ iPad mini 1, iOS 6.1.3: earlier builds ran on the real device, with a real Claude session over Wi-Fi.<br>⚠️ **v0.1.0 itself has not run on a real iPad yet.** It has a new SSH library build (a security fix), a new name and new icons. It passes the Mac tests and the iOS 6 binary checks |
-| **Experimental** | ⚠️ iOS 7 and later: tested only on modern UIKit through a Mac test bench. **No real iPad on these versions has run it.** Please send a [device report](../../issues/new?template=device-report.yml) |
+| **Install** | [Install guide](docs/install/README.md). Not jailbroken? [Step-by-step guide](docs/install/non-jailbroken-ipad.md) |
+| **Supports** | iPad on **iOS 6 to 12**. iOS 13 and later are not supported |
+| **Tested** | ✅ iPad mini 1, iOS 6.1.3: earlier builds ran on the real device, with a real Claude session over Wi-Fi.<br>⚠️ **Releases since v0.1.0 have not run on a real iPad yet.** It has a new SSH library build (a security fix), a new name and new icons. It passes the Mac tests and the iOS 6 binary checks |
+| **Experimental** | ⚠️ iOS 7 to 12: tested only on modern UIKit through a Mac test bench. **No real iPad on these versions has run it.** Please send a [device report](../../issues/new?template=device-report.yml) |
 | **Security** | [SECURITY.md](SECURITY.md): known limits, and how to report a problem |
 
 New Claude and Codex sessions start in **auto mode**: the agent can edit files and run commands on your server without asking each time.
@@ -75,7 +76,7 @@ The iPad must accept unsigned apps through the normal install service. The test 
 On the Mac: `brew install libimobiledevice ideviceinstaller`. Connect the iPad by USB, then:
 
 ```sh
-scripts/ipad_deploy.sh ios/packages/dev.padterm.app_0.1.0_iphoneos-arm.deb
+scripts/ipad_deploy.sh ios/packages/dev.padterm.app_0.1.1_iphoneos-arm.deb
 scripts/ipad_install_key.sh ~/.ssh/id_ed25519_ipad my-server   # copies the key to the app's Documents
 ```
 
@@ -85,11 +86,11 @@ deletes the copy in Documents after the Save. Select the server, tap the **Claud
 Without the Mac tools, iTunes File Sharing also shows the app's Documents folder. The iPad needs Wi-Fi to reach your
 server. The server must accept incoming SSH: a Mac with "Block all incoming connections" in its firewall refuses it.
 
-### Other iPads and iOS versions
+### Other iPads
 
-`scripts/package_all.sh` makes one set of packages in `dist/`: a fat `.ipa` for sideloading, a rootful `.deb` and a rootless `.deb`. [docs/install/README.md](docs/install/README.md) gives the route for each iPad.
+`scripts/package_all.sh` makes the release files in `dist/`: a sideload `.ipa` and a jailbreak `.deb`. [docs/install/README.md](docs/install/README.md) gives the route for each iPad, and [docs/install/non-jailbroken-ipad.md](docs/install/non-jailbroken-ipad.md) covers an iPad with no jailbreak.
 
-**Only iOS 6.1.3 on an iPad mini 1 has run on a device.** The modern code path has run on modern UIKit through a Mac test bench (`tests/modern/run_bench.sh`), which found three bugs that iOS 6 cannot show. No modern iPad has run the app. Details: [docs/design/ios-version-support.md](docs/design/ios-version-support.md).
+**Only iOS 6.1.3 on an iPad mini 1 has run on a device.** The later code path has run on modern UIKit through a Mac test bench (`tests/modern/run_bench.sh`), which found three bugs that iOS 6 cannot show. Details: [docs/design/ios-version-support.md](docs/design/ios-version-support.md).
 
 ## 3. Build (macOS, Apple Silicon, Command Line Tools only)
 

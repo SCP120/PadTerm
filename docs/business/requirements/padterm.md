@@ -132,7 +132,7 @@ The user starts many Claude and Codex sessions on one server and returns to any 
 
 | ID | Requirement |
 |----|-------------|
-| NFR-1 | iOS 6.0 or later, armv7, iPad 1024×768, all orientations. Install as a `.deb` signed with `ldid`. |
+| NFR-1 | iOS 6.0 to 12 on iPad, all orientations; iOS 13 and later are out (owner, 2026-11-04). The jailbreak `.deb` is signed with `ldid` and refuses iOS 13; the `.ipa` is signed by a sideload tool. |
 | NFR-2 | The binary uses no API newer than iOS 6.0 (compile check `-Werror=unguarded-availability`). |
 | NFR-3 | The binary has `LC_VERSION_MIN_IPHONEOS 6.0`, no `LC_BUILD_VERSION`, no chained fixups, no thread-local variables, and only ARM functions (this linker cannot write Thumb code pointers). |
 | NFR-4 | Core, renderer and E2E tests run on macOS against a local `sshd`, with the real `claude` and `codex`. |

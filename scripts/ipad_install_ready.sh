@@ -26,4 +26,4 @@ idevicescreenshot tests/artifacts/device/launch_screen.tiff >/dev/null 2>&1
 sips -s format png tests/artifacts/device/launch_screen.tiff --out tests/artifacts/device/launch_screen.png >/dev/null
 rm -f tests/artifacts/device/launch_screen.tiff
 make -s -C ios clean package FINALPACKAGE=1 >/dev/null 2>&1
-scripts/ipad_deploy.sh "ios/packages/dev.padterm.app_0.1.0_iphoneos-arm.deb" | tail -1
+scripts/ipad_deploy.sh "ios/packages/dev.padterm.app_0.1.1_iphoneos-arm.deb" | tail -1

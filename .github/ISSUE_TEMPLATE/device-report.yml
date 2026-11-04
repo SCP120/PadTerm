@@ -5,17 +5,17 @@ labels: ["device report"]
 body:
   - type: input
     id: device
-    attributes: {label: iPad model, placeholder: iPad Air 2}
+    attributes: {label: iPad model, placeholder: iPad mini 1}
     validations: {required: true}
   - type: input
     id: ios
-    attributes: {label: iOS version, placeholder: "15.8"}
+    attributes: {label: iOS version, placeholder: "9.3.5"}
     validations: {required: true}
   - type: dropdown
     id: route
     attributes:
       label: Install route
-      options: [Sideloadly, AltStore, SideStore, TrollStore, Rootful jailbreak, Rootless jailbreak, Other]
+      options: [Sideloadly, Jailbreak package, Other]
     validations: {required: true}
   - type: checkboxes
     id: works

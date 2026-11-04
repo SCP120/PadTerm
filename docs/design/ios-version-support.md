@@ -1,12 +1,13 @@
-# PadTerm iOS version support (iOS 6 to current)
+# PadTerm iOS version support (iOS 6 to 12)
 
 Status: 2026-11-04. **Only the armv7 slice has run on a real device** (iPad mini 1, iOS 6.1.3). The modern code path has run on modern UIKit through a Mac Catalyst test bench on macOS 27 (section 4.1). No modern iPad has run the app. Items marked *(unverified)* come from memory or from non-Apple sources.
+
+**Supported range: iOS 6 to 12** (owner, 2026-11-04). The rootless package and the sideload routes for iOS 13 and later are gone. The sections below on later iOS are background: the code keeps its guards, and the Catalyst bench still uses them, but those versions are not supported.
 
 ## 1. Summary
 
 | Question | Answer |
 |---|---|
-| One fat armv7+arm64 binary for iOS 6 to current? | **Yes for sideload and jailbreak builds.** `scripts/package_all.sh` makes it. The armv7 slice serves iOS 6 to 10, the arm64 slice serves iOS 10 and later (libssh2 calls `clock_gettime`), and iOS 11+ ignores the armv7 slice. Whether a sideload tool accepts the fat file is not tested; the rootless `.deb` is arm64 only. |
 | Same binary for the App Store or TestFlight? | **No.** Xcode 14+ cannot build armv7 for iOS, and App Store Connect needs an Xcode 26 / iOS 26 SDK build with a deployment target of iOS 15 or later (see section 2). That is a separate arm64-only Xcode build. |
 | One source tree? | Yes. Newer APIs sit behind `respondsToSelector`, `NSClassFromString` or `#if __IPHONE_OS_VERSION_MAX_ALLOWED`. `@available` does not link in the armv7 pass. |
 | Biggest risk | Touch, the on-screen keyboard, split screen and Stage Manager on a real modern iPad. The bench cannot show them. |
@@ -20,9 +21,8 @@ CPU facts: armv7 devices cannot run arm64 code. arm64 started with the A7 (iPad 
 | 6 | armv7 only | existing build: theos, `-mno-thumb`, min 6.0 | iPhoneOS 9.3 SDK (patched copy), CLT clang + ld-27037 | Only iPad 2, 3, 4 and mini 1 run iOS 6. Works on the owner's iPad mini 1 (iOS 6.1.3, jailbroken, ldid fake signature). |
 | 7 to 8 | armv7 (32-bit iPads). A 64-bit iPad must update to iOS 10 | fat | armv7: 9.3 SDK. arm64: min target 10.0 | Spike links arm64 with min 7.0. Linker writes `LC_VERSION_MIN_IPHONEOS` below iOS 12. UI changes to the iOS 7 look. |
 | 9 to 10 | armv7 or arm64 | fat | same | Last iOS for 32-bit iPads. Clang demands `libarclite` for ARC at min target below 9.0, but only when `-fobjc-arc` is on the link line (see 5.3). |
-| 11 to 14 | arm64 only | arm64 slice of the fat binary | same | iOS 11 refuses 32-bit-only apps. Fat binaries run the arm64 slice. |
-| 15 to 26 | arm64 only | same | same | Xcode 26 can install and debug on iOS 15+ devices, upload range iOS 15 to 26.5 ([Apple Xcode support](https://developer.apple.com/support/xcode/)). iPadOS 26 supports iPad 8th gen+, Air 3+, mini 5+, Pro 2018+ ([iPhone in Canada](https://www.iphoneincanada.ca/2025/06/09/which-ipads-support-ipados-26/)). |
-| 27 (beta or release; not checked) | arm64 | same | same | TN3187: after iOS 26, UIScene lifecycle is required *when building with the latest SDK*, else the app will not launch ([TN3187](https://developer.apple.com/documentation/technotes/tn3187-migrating-to-the-uikit-scene-based-life-cycle)). A binary built with an older SDK is not covered by that sentence. Not tested. |
+| 13 and later | not supported | | | The package refuses them; the code still has guards |
+| 11 to 12 | arm64 only | arm64 slice of the fat binary | same | iOS 11 refuses 32-bit-only apps. Fat binaries run the arm64 slice. |
 
 ### What a modern iOS needs from the binary
 
@@ -38,15 +38,14 @@ CPU facts: armv7 devices cannot run arm64 code. arm64 started with the A7 (iPad 
 ## 3. Recommended build plan
 
 1. **Keep the armv7 build as is** (9.3 SDK, `-mno-thumb`, min 6.0). Do not change it.
-2. **Add an arm64 pass** with the iPhoneOS16.5 SDK (or newer from theos/sdks), `-miphoneos-version-min=7.0` for the jailbreak and sideload product. `scripts/build_deps_arm64.sh` and `scripts/package_all.sh` hold the commands. Moving the arm64 minimum to 9.0 avoids the `libarclite` discussion and costs only iOS 7 and 8 on 64-bit iPads; decide with the owner.
-3. **Merge with `lipo -create`**, then sign: `ldid -S` for jailbreak; a real signer (Sideloadly, AltStore, Xcode) re-signs for stock devices. These tools replace the ldid signature.
+2. **Add an arm64 pass** with the iPhoneOS16.5 SDK (or newer from theos/sdks), `-miphoneos-version-min=10.0` for the jailbreak and sideload product. `scripts/build_deps_arm64.sh` and `scripts/package_all.sh` hold the commands. The arm64 minimum is 10.0, because libssh2 calls `clock_gettime`.
+3. **Merge with `lipo -create`**, then sign: `ldid -S` for jailbreak; a real signer (Sideloadly) re-signs for stock devices. These tools replace the ldid signature.
 4. **Ship three artefacts:**
 
 | Artefact | Slices | Signed by | Reaches |
 |---|---|---|---|
 | `.deb` rootful (iphoneos-arm) | armv7 + arm64 | ldid | iOS 6 to about 14 jailbreaks with `/Applications` |
-| `.deb` rootless (iphoneos-arm64, `/var/jb`) | arm64 | ldid | iOS 15+ rootless jailbreaks |
-| `.ipa` | armv7 + arm64 | the user's sideload tool | stock iPads, iOS 9+ (see install guide) |
+| `.ipa` | armv7 + arm64 | the user's sideload tool | stock iPads, iOS 7 to 12 ([guide](../install/non-jailbroken-ipad.md)) |
 | App Store / TestFlight build | arm64 | Xcode, paid account | iOS 15+, after App Review (section 8) |
 
 5. **Source rule:** one source tree. Any API newer than the 9.3 SDK sits under `#if __IPHONE_OS_VERSION_MAX_ALLOWED >= N`, plus a runtime check, because the armv7 pass cannot see the declaration.
@@ -154,7 +153,6 @@ Stock controls take the look of the iOS that runs them: from iOS 7 the bars, but
 | Era | Package | Install location | What PadTerm needs |
 |---|---|---|---|
 | iOS 6 to about 14 (rootful) | `.deb`, `Architecture: iphoneos-arm`, `Depends: firmware (>= 6.0)` (current control file) | `/Applications/PadTerm.app`, root, no sandbox | Current package works on the iPad mini 1. A fat binary adds the arm64 slice; same deb. |
-| iOS 15+ rootless | `.deb`, `Architecture: iphoneos-arm64`, install prefix `/var/jb` | `/var/jb/Applications/PadTerm.app` | arm64-only slice, separate control file, `THEOS_PACKAGE_SCHEME=rootless`. Theos documents the scheme as iOS 15+ with `/var/jb` ([Theos](https://theos.dev/docs/rootless)). Rebuild with `make clean` between schemes. |
 | `.ipa` on a jailbroken device | zip with `Payload/PadTerm.app` | installed by the user's tool | Needs a real or ldid signature; the app is sandboxed, so Documents lives in the sandbox container and File Sharing works. |
 
 Rootful jailbreak by version (6, 7, 8-9, 10, 11-14 and so on) and the rootless or roothide tools change over time; this document holds no current list. See [iOS Guide](https://ios.cfw.guide/) and [The Apple Wiki](https://theapplewiki.com/) for the tool that matches a device and iOS version. This document gives no jailbreak steps.

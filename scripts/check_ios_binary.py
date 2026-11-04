@@ -46,6 +46,8 @@ with tempfile.TemporaryDirectory() as tmp:
                                                     "Default-Portrait~ipad.png", "Default-Landscape~ipad.png"]),
           "missing files in " + ", ".join(p.name for p in app.iterdir()))
     check("no_third_party_art", "NFR-7", not list(app.glob("mascot_*")), "mascot art in a public package")
+    depends = run("dpkg-deb", "-f", str(DEB), "Depends")
+    check("package_refuses_ios_13_and_later", "NFR-1", "firmware (<< 13.0)" in depends, f"Depends: {depends}")
     info = run("plutil", "-convert", "json", "-o", "-", str(app / "Info.plist"))
     plist = json.loads(info)
     check("plist_min_os_6", "NFR-1", plist.get("MinimumOSVersion") == "6.0" and plist.get("UIDeviceFamily") == [2],
