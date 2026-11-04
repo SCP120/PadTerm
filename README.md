@@ -7,7 +7,7 @@
 | | |
 |---|---|
 | **Install** | [Install guide](docs/install/README.md) for every iPad, with or without a jailbreak |
-| **Tested** | ✅ iPad mini 1, iOS 6.1.3, on the real device |
+| **Tested** | ✅ iPad mini 1, iOS 6.1.3: earlier builds ran on the real device, with a real Claude session over Wi-Fi.<br>⚠️ **v0.1.0 itself has not run on a real iPad yet.** It has a new SSH library build (a security fix), a new name and new icons. It passes the Mac tests and the iOS 6 binary checks |
 | **Experimental** | ⚠️ iOS 7 and later: tested only on modern UIKit through a Mac test bench. **No real iPad on these versions has run it.** Please send a [device report](../../issues/new?template=device-report.yml) |
 | **Security** | [SECURITY.md](SECURITY.md): known limits, and how to report a problem |
 

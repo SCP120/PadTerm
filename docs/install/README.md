@@ -6,7 +6,7 @@ PadTerm is a terminal client. Claude Code and Codex run on **your own server**, 
 
 | Part | State |
 |------|-------|
-| iPad mini 1, iOS 6.1.3, jailbroken | ✅ Ran on the real device: UI, sessions, a real Claude session over Wi-Fi |
+| iPad mini 1, iOS 6.1.3, jailbroken | ✅ Earlier builds ran on the real device: UI, sessions, a real Claude session over Wi-Fi. ⚠️ v0.1.0 itself has not run on a real iPad yet: it has a new SSH library build, a new name and new icons |
 | Modern UIKit (iOS 15 API level) on a Mac test bench | ✅ Full UI test passes. It is not an iPad: no touch, no on-screen keyboard |
 | A real iPad on iOS 7 or later | ⚠️ **Experimental: never run.** If you try it, please send a [device report](../../../../issues/new?template=device-report.yml) |
 | Sideload tools below | ❌ Not run by us. Follow the tool's own page if it differs from this guide |

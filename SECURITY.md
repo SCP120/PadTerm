@@ -20,4 +20,4 @@ Use GitHub's private report: the **Security** tab of this repository, then **Rep
 | Auto mode | New and resumed Claude and Codex sessions start in auto mode. The agent can edit files and run commands on your server without asking each time. Use a user and a directory that you accept this for |
 | libssh2 | Pinned to a commit on its main branch (`scripts/dep_pins.sh`), because release 1.11.1 has CVE-2026-55200 and others, and no release held the fixes on 2026-11-04. This moves to the next release when it exists |
 | Sideloaded builds | A sideload tool signs the app with your Apple Account. Get the tool from its own site |
-| iOS 7 and later | Experimental: no real iPad on these versions has run the app |
+| Device testing | v0.1.0 has not run on a real iPad. Earlier builds ran on an iPad mini 1 on iOS 6.1.3. No real iPad on iOS 7 or later has run the app |
