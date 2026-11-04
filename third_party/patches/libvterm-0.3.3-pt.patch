@@ -1,0 +1,166 @@
+diff -ru -x *.o a/include/vterm.h libvterm-0.3.3-pt/include/vterm.h
+--- a/include/vterm.h	2023-08-04 01:43:52
++++ b/include/vterm.h	2026-11-03 13:07:54
+@@ -245,6 +245,7 @@
+   VTERM_ATTR_BACKGROUND, // color:  40-49 100-107
+   VTERM_ATTR_SMALL,      // bool:   73, 74, 75
+   VTERM_ATTR_BASELINE,   // number: 73, 74, 75
++  VTERM_ATTR_DIM,        // bool:   2, 22 (PadTerm patch)
+ 
+   VTERM_N_ATTRS
+ } VTermAttr;
+@@ -509,6 +510,7 @@
+     unsigned int dhl       : 2; /* On a DECDHL line (1=top 2=bottom) */
+     unsigned int small     : 1;
+     unsigned int baseline  : 2;
++    unsigned int dim       : 1; /* SGR 2 faint (PadTerm patch) */
+ } VTermScreenCellAttrs;
+ 
+ enum {
+diff -ru -x *.o a/src/pen.c libvterm-0.3.3-pt/src/pen.c
+--- a/src/pen.c	2023-08-04 01:43:52
++++ b/src/pen.c	2026-11-03 13:23:00
+@@ -32,13 +32,14 @@
+   { 255, 255, 255 }, // white for real
+ };
+ 
++/* PadTerm patch: xterm 256colres.h values (cube 0,95,135,175,215,255; grey 8+10*i) */
+ static int ramp6[] = {
+-  0x00, 0x33, 0x66, 0x99, 0xCC, 0xFF,
++  0x00, 0x5F, 0x87, 0xAF, 0xD7, 0xFF,
+ };
+ 
+ static int ramp24[] = {
+-  0x00, 0x0B, 0x16, 0x21, 0x2C, 0x37, 0x42, 0x4D, 0x58, 0x63, 0x6E, 0x79,
+-  0x85, 0x90, 0x9B, 0xA6, 0xB1, 0xBC, 0xC7, 0xD2, 0xDD, 0xE8, 0xF3, 0xFF,
++  0x08, 0x12, 0x1C, 0x26, 0x30, 0x3A, 0x44, 0x4E, 0x58, 0x62, 0x6C, 0x76,
++  0x80, 0x8A, 0x94, 0x9E, 0xA8, 0xB2, 0xBC, 0xC6, 0xD0, 0xDA, 0xE4, 0xEE,
+ };
+ 
+ static void lookup_default_colour_ansi(long idx, VTermColor *col)
+@@ -170,6 +171,7 @@
+ INTERNAL void vterm_state_resetpen(VTermState *state)
+ {
+   state->pen.bold = 0;      setpenattr_bool(state, VTERM_ATTR_BOLD, 0);
++  state->pen.dim = 0;       setpenattr_bool(state, VTERM_ATTR_DIM, 0);
+   state->pen.underline = 0; setpenattr_int (state, VTERM_ATTR_UNDERLINE, 0);
+   state->pen.italic = 0;    setpenattr_bool(state, VTERM_ATTR_ITALIC, 0);
+   state->pen.blink = 0;     setpenattr_bool(state, VTERM_ATTR_BLINK, 0);
+@@ -193,6 +195,7 @@
+     state->pen = state->saved.pen;
+ 
+     setpenattr_bool(state, VTERM_ATTR_BOLD,      state->pen.bold);
++    setpenattr_bool(state, VTERM_ATTR_DIM,       state->pen.dim);
+     setpenattr_int (state, VTERM_ATTR_UNDERLINE, state->pen.underline);
+     setpenattr_bool(state, VTERM_ATTR_ITALIC,    state->pen.italic);
+     setpenattr_bool(state, VTERM_ATTR_BLINK,     state->pen.blink);
+@@ -359,9 +362,16 @@
+       setpenattr_int(state, VTERM_ATTR_UNDERLINE, state->pen.underline);
+       break;
+ 
+-    case 22: // Bold off
++    case 2: // Faint on (PadTerm patch)
++      state->pen.dim = 1;
++      setpenattr_bool(state, VTERM_ATTR_DIM, 1);
++      break;
++
++    case 22: // Bold and faint off
+       state->pen.bold = 0;
+       setpenattr_bool(state, VTERM_ATTR_BOLD, 0);
++      state->pen.dim = 0;
++      setpenattr_bool(state, VTERM_ATTR_DIM, 0);
+       break;
+ 
+     case 23: // Italic and Gothic (currently unsupported) off
+@@ -553,6 +563,10 @@
+   switch(attr) {
+   case VTERM_ATTR_BOLD:
+     val->boolean = state->pen.bold;
++    return 1;
++
++  case VTERM_ATTR_DIM:
++    val->boolean = state->pen.dim;
+     return 1;
+ 
+   case VTERM_ATTR_UNDERLINE:
+diff -ru -x *.o a/src/screen.c libvterm-0.3.3-pt/src/screen.c
+--- a/src/screen.c	2023-08-04 01:43:52
++++ b/src/screen.c	2026-11-03 14:17:28
+@@ -27,6 +27,7 @@
+   unsigned int font      : 4; /* 0 to 9 */
+   unsigned int small     : 1;
+   unsigned int baseline  : 2;
++  unsigned int dim       : 1;
+ 
+   /* Extra state storage that isn't strictly pen-related */
+   unsigned int protected_cell : 1;
+@@ -186,8 +187,11 @@
+   if(i < VTERM_MAX_CHARS_PER_CELL)
+     cell->chars[i] = 0;
+ 
+-  for(int col = 1; col < info->width; col++)
+-    getcell(screen, pos.row, pos.col + col)->chars[0] = (uint32_t)-1;
++  for(int col = 1; col < info->width; col++) {
++    ScreenCell *spacer = getcell(screen, pos.row, pos.col + col); /* PadTerm patch: NULL past the row end */
++    if(spacer)
++      spacer->chars[0] = (uint32_t)-1;
++  }
+ 
+   VTermRect rect = {
+     .start_row = pos.row,
+@@ -411,6 +415,9 @@
+   case VTERM_ATTR_BOLD:
+     screen->pen.bold = val->boolean;
+     return 1;
++  case VTERM_ATTR_DIM:
++    screen->pen.dim = val->boolean;
++    return 1;
+   case VTERM_ATTR_UNDERLINE:
+     screen->pen.underline = val->number;
+     return 1;
+@@ -692,6 +699,7 @@
+         }
+ 
+         dst->pen.bold      = src->attrs.bold;
++        dst->pen.dim       = src->attrs.dim;
+         dst->pen.underline = src->attrs.underline;
+         dst->pen.italic    = src->attrs.italic;
+         dst->pen.blink     = src->attrs.blink;
+@@ -981,6 +989,7 @@
+   }
+ 
+   cell->attrs.bold      = intcell->pen.bold;
++  cell->attrs.dim       = intcell->pen.dim;
+   cell->attrs.underline = intcell->pen.underline;
+   cell->attrs.italic    = intcell->pen.italic;
+   cell->attrs.blink     = intcell->pen.blink;
+diff -ru -x *.o a/src/state.c libvterm-0.3.3-pt/src/state.c
+--- a/src/state.c	2023-08-04 01:43:52
++++ b/src/state.c	2026-11-03 14:17:28
+@@ -1231,10 +1231,12 @@
+ 
+   case 0x62: { // REP - ECMA-48 8.3.103
+     const int row_width = THISROWWIDTH(state);
++    /* PadTerm patch: with no previous character (width 0) the loop never ended; a wide character at the
++     * last column was written past the row. Repeat count characters while each one fits. */
++    if (state->combine_width <= 0)
++      break;
+     count = CSI_ARG_COUNT(args[0]);
+-    col = state->pos.col + count;
+-    UBOUND(col, row_width);
+-    while (state->pos.col < col) {
++    while (count-- > 0 && state->pos.col + state->combine_width <= row_width) {
+       putglyph(state, state->combine_chars, state->combine_width, state->pos);
+       state->pos.col += state->combine_width;
+     }
+diff -ru -x *.o a/src/vterm_internal.h libvterm-0.3.3-pt/src/vterm_internal.h
+--- a/src/vterm_internal.h	2023-08-04 01:43:52
++++ b/src/vterm_internal.h	2026-11-03 13:07:54
+@@ -50,6 +50,7 @@
+   unsigned int font:4; /* To store 0-9 */
+   unsigned int small:1;
+   unsigned int baseline:2;
++  unsigned int dim:1;
+ };
+ 
+ struct VTermState

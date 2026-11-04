@@ -1,0 +1,32 @@
+name: Device report
+description: PadTerm on your iPad, working or not. Remove host names, user names and keys first.
+title: "Device report: <iPad model>, iOS <version>"
+labels: ["device report"]
+body:
+  - type: input
+    id: device
+    attributes: {label: iPad model, placeholder: iPad Air 2}
+    validations: {required: true}
+  - type: input
+    id: ios
+    attributes: {label: iOS version, placeholder: "15.8"}
+    validations: {required: true}
+  - type: dropdown
+    id: route
+    attributes:
+      label: Install route
+      options: [Sideloadly, AltStore, SideStore, TrollStore, Rootful jailbreak, Rootless jailbreak, Other]
+    validations: {required: true}
+  - type: checkboxes
+    id: works
+    attributes:
+      label: What works
+      options:
+        - label: The app opens and fills the screen
+        - label: SSH connects
+        - label: Claude Code or Codex runs
+        - label: On-screen keyboard and key bar
+        - label: Sessions list and resume
+  - type: textarea
+    id: notes
+    attributes: {label: What went wrong, description: "Do not paste keys, host names or session text."}
