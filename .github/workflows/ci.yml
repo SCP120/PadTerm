@@ -1,0 +1,21 @@
+name: CI
+on:
+  push: {branches: [main]}
+  pull_request:
+permissions: {contents: read}
+jobs:
+  secrets:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with: {fetch-depth: 0}
+      - run: brew install gitleaks
+      - run: gitleaks git --redact --no-banner
+  unit:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - run: PT_HOST_ONLY=1 scripts/build_deps.sh > /dev/null
+      - run: scripts/prepare_libvterm.sh
+      - run: make -j4 "$PWD/build/host/unit_tests"
+      - run: build/host/unit_tests unit build/host/results.jsonl
