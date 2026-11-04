@@ -18,4 +18,5 @@ jobs:
       - run: PT_HOST_ONLY=1 scripts/build_deps.sh > /dev/null
       - run: scripts/prepare_libvterm.sh
       - run: make -j4 "$PWD/build/host/unit_tests"
+      - run: mkdir -p tests/artifacts # a render test writes its PNG here, and git ignores the folder
       - run: build/host/unit_tests unit build/host/results.jsonl
