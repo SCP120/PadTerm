@@ -4,6 +4,10 @@
 <p align="center"><b>Run Claude Code and Codex from an iPad of 2012, on iOS 6.</b><br>A native SSH + tmux terminal. The agents run on your own server; the iPad shows their real terminal UI.</p>
 <p align="center">No account. No relay. No telemetry. Each agent logs in on your server with your own account.</p>
 
+<p align="center"><img src="docs/images/demo-ios6.gif" width="420" alt="Real screen captures: Claude Code builds a note app on an iPad mini running iOS 6"><br><sub>Real screen captures from an iPad mini on iOS 6.1.3: Claude Code builds a note app over Wi-Fi. This is an earlier build with an older look, sped up.</sub></p>
+
+<p align="center">Like the idea? A ⭐ helps other old-iPad owners find it. Tried it? Send a <a href="../../issues/new?template=device-report.yml">device report</a>.</p>
+
 | | |
 |---|---|
 | **Install** | [Install guide](docs/install/README.md). Not jailbroken? [Step-by-step guide](docs/install/non-jailbroken-ipad.md) |
